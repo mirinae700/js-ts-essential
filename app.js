@@ -1,5 +1,5 @@
 const container = document.getElementById('root');
-const content = document.createElement('dev');
+const content = document.createElement('div');
 const ajax = new XMLHttpRequest();
 const NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
 const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
@@ -16,7 +16,7 @@ const ul = document.createElement('ul');
 window.addEventListener('hashchange', () => {
   const id = location.hash.substring(1);
 
-  const newsContent = getData(CONTENT_URL);
+  const newsContent = getData(CONTENT_URL.replace('@id', id));
   const title = document.createElement('h1');
   title.textContent = newsContent.title;
 
