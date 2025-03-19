@@ -28,51 +28,61 @@ function router() {
 
 function newsDetail() {
   const id = location.hash.substring(7);
+  let template = `
+    <div>
+      <h1>{{__title__}}</h1>
+      <div>
+        <a href="#/page/{{__current_page__}}">목록으로</a>
+      </div>
+    </div>
+  `;
 
   const newsContent = getData(CONTENT_URL.replace('@id', id));
+  template = template.replace('{{__title__}}', newsContent.title);
+  template = template.replace('{{__current_page__}}', store.currentPage);
 
-  container.innerHTML = `
-  <h1>${newsContent.title}</h1>
-  
-  <div>
-  <a href="#/page/${store.currentPage}">목록으로</a>
-  </div>
-  `;
+  container.innerHTML = template;
 }
 
 function newsFeed() {
   const newsList = [];
   const newsFeed = getData(NEWS_URL);
-
-  newsList.push('<ul>');
+  let template = `
+    <div>
+      <h1>Hacker News Feed</h1>
+      <ul>
+        {{__news_feed__}}
+      </ul>
+      <div>
+        <a href="#/page/{{__prev_page__}}">이전 페이지</a>
+      <a href="#/page/{{__next_page__}}">다음 페이지</a>
+      </div>
+    </div>
+  `;
 
   for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
     newsList.push(`
       <li>
-      <a href="#/show/${newsFeed[i].id}">
-      ${newsFeed[i].title} (${newsFeed[i].comments_count})
-      </a>
+        <a href="#/show/${newsFeed[i].id}">
+          ${newsFeed[i].title} (${newsFeed[i].comments_count})
+        </a>
       </li>
-      `);
+    `);
   }
 
-  newsList.push('</ul>');
+  template = template.replace('{{__news_feed__}}', newsList.join(''));
+  template = template.replace(
+    '{{__prev_page__}}',
+    store.currentPage > 1 ? store.currentPage - 1 : 1
+  );
+  template = template.replace(
+    '{{__next_page__}}',
+    store.currentPage * 10 === newsFeed.length
+      ? store.currentPage
+      : store.currentPage + 1
+  );
 
-  // 페이징
-  newsList.push(`
-    <div>
-      <a href="#/page/${
-        store.currentPage > 1 ? store.currentPage - 1 : 1
-      }">이전 페이지</a>
-      <a href="#/page/${
-        store.currentPage * 10 === newsFeed.length
-          ? store.currentPage
-          : store.currentPage + 1
-      }">다음 페이지</a>
-    </div>
-    `);
-
-  container.innerHTML = newsList.join('');
+  container.innerHTML = template;
 }
 
 window.addEventListener('hashchange', router);
