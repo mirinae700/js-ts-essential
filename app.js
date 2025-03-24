@@ -5,12 +5,20 @@ const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
 
 const store = {
   currentPage: 1,
+  feeds: [],
 };
 
 function getData(url) {
   ajax.open('GET', url, false);
   ajax.send();
   return JSON.parse(ajax.response);
+}
+
+function makeFeeds(feeds) {
+  for (let i = 0; i < feeds.length; i++) {
+    feeds[i].read = false;
+  }
+  return feeds;
 }
 
 function router() {
@@ -58,6 +66,14 @@ function newsDetail() {
     </div>
   `;
 
+  // 읽음 표시
+  for (let i = 0; i < store.feeds.length; i++) {
+    if (store.feeds[i].id === Number(id)) {
+      store.feeds[i].read = true;
+      break;
+    }
+  }
+
   // 댓글 표시
   function makeComment(comments, called = 0) {
     const commentString = [];
@@ -89,8 +105,8 @@ function newsDetail() {
 }
 
 function newsFeed() {
+  let newsFeed = store.feeds;
   const newsList = [];
-  const newsFeed = getData(NEWS_URL);
   let template = `
     <div class="bg-gray-600 min-h-screen">
       <div class="bg-white text-xl">
@@ -116,10 +132,14 @@ function newsFeed() {
     </div>
   `;
 
+  if (newsFeed.length === 0) {
+    newsFeed = store.feeds = makeFeeds(getData(NEWS_URL));
+  }
+
   for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
     newsList.push(`
       <div class="p-6 ${
-        newsFeed[i].read ? 'bg-red-500' : 'bg-white'
+        newsFeed[i].read ? 'bg-green-50' : 'bg-white'
       } mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
         <div class="flex">
           <div class="flex-auto">
