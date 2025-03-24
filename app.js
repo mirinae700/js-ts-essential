@@ -58,10 +58,34 @@ function newsDetail() {
     </div>
   `;
 
-  template = template.replace('{{__title__}}', newsContent.title);
-  template = template.replace('{{__current_page__}}', store.currentPage);
+  // 댓글 표시
+  function makeComment(comments, called = 0) {
+    const commentString = [];
 
-  container.innerHTML = template;
+    for (let i = 0; i < comments.length; i++) {
+      commentString.push(`
+        <div style="padding-left: ${called * 40}px;" class="mt-4">
+          <div class="text-gray-400">
+            <i class="fa fa-sort-up mr-2"></i>
+            <strong>${comments[i].user}</strong> ${comments[i].time_ago}
+          </div>
+          <p class="text-gray-700">${comments[i].content}</p>
+        </div>
+      `);
+
+      // 대댓글 표시 위해 재귀호출
+      if (comments[i].comments.length > 0) {
+        commentString.push(makeComment(comments[i].comments, called + 1));
+      }
+    }
+
+    return commentString.join('');
+  }
+
+  container.innerHTML = template.replace(
+    '{{__comments__}}',
+    makeComment(newsContent.comments)
+  );
 }
 
 function newsFeed() {
@@ -94,13 +118,17 @@ function newsFeed() {
 
   for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
     newsList.push(`
-      <div class="p-6 ${newsFeed[i].read ? 'bg-red-500' : 'bg-white'} mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
+      <div class="p-6 ${
+        newsFeed[i].read ? 'bg-red-500' : 'bg-white'
+      } mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
         <div class="flex">
           <div class="flex-auto">
             <a href="#/show/${newsFeed[i].id}">${newsFeed[i].title}</a>  
           </div>
           <div class="text-center text-sm">
-            <div class="w-10 text-white bg-green-300 rounded-lg px-0 py-2">${newsFeed[i].comments_count}</div>
+            <div class="w-10 text-white bg-green-300 rounded-lg px-0 py-2">${
+              newsFeed[i].comments_count
+            }</div>
           </div>
         </div>
         <div class="flex mt-3">
